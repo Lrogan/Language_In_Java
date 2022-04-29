@@ -6,13 +6,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-public class Lexer_In_Java_Main {
+public class Language_In_Java_Main {
 
     public static void main(String[] args) throws Exception {
         //get input program
         String prog = "";
-        Lexer_In_Java_Main run = new Lexer_In_Java_Main();
-        Lexer lexical = new Lexer();
+        Language_In_Java_Main run = new Language_In_Java_Main();
+        Parser parse = new Parser();
         if(args.length > 0)
             prog = run.getInput(args[0]);
         else
@@ -21,6 +21,8 @@ public class Lexer_In_Java_Main {
             System.out.println("Please input the full name(including the extension) of the program you wish to lexicalize\neg. \"testProgram.txt\"");
             prog = run.getInput(keyboard.nextLine());
         }
+
+        System.out.println(parse.parseProg(prog));
 
 //        //parse input program[lexer driver]
 //        Tuple lexd = lexical.lex(prog);
