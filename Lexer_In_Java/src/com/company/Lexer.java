@@ -30,24 +30,17 @@ public class Lexer
         END_OF_INPUT,
         OPENP,
         CLOSEP,
+        COMMA,
         ERROR
     }
 
     List<String> keywords = Arrays.asList("print","get","if","then","else","end","while","do","and","or","not");
 
-    public String getInput(String inputfile) throws Exception {
-        try
-        {
-            URL url = getClass().getResource(inputfile);
-            assert url != null;
-            Path file = Paths.get(url.getPath().substring(1));
-            return Files.readString(file);
-        }
-        catch(Exception E)
-        {
-            throw new Exception("File Not Found", E);
-        }
+    public int line = 0;
 
+    public void next_line()
+    {
+        line++;
     }
 
     public Tuple lex(String input)
@@ -56,6 +49,10 @@ public class Lexer
 
         while(i < input.length() && (input.charAt(i) == ' ' || input.charAt(i) == '\r' || input.charAt(i) == '\n'))
         {
+            if(input.charAt(i) == '\n')
+            {
+                next_line();
+            }
             i += 1;
         }
 
@@ -150,6 +147,10 @@ public class Lexer
         else if(input.charAt(i) == ')')
         {
             return new Tuple(Lexeme.CLOSEP, input.substring(i+1));
+        }
+        else if(input.charAt(i) == ',')
+        {
+            return new Tuple(Lexeme.COMMA, input.substring(i+1));
         }
         else
             return new Tuple(Lexeme.ERROR, "Could not find a lexeme");
