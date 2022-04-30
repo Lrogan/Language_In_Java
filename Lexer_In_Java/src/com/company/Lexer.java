@@ -31,12 +31,14 @@ public class Lexer
         OPENP,
         CLOSEP,
         COMMA,
+        OPENSTBRACE,
+        CLOSESTBRACE,
         ERROR
     }
 
     List<String> keywords = Arrays.asList("print","get","if","then","else","end","while","do","and","or","not");
 
-    public int line = 0;
+    public int line = 1;
 
     public void next_line()
     {
@@ -151,6 +153,14 @@ public class Lexer
         else if(input.charAt(i) == ',')
         {
             return new Tuple(Lexeme.COMMA, input.substring(i+1));
+        }
+        else if(input.charAt(i) == '[')
+        {
+            return new Tuple(Lexeme.OPENSTBRACE, input.substring(i+1));
+        }
+        else if(input.charAt(i) == ']')
+        {
+            return new Tuple(Lexeme.CLOSESTBRACE, input.substring(i+1));
         }
         else
             return new Tuple(Lexeme.ERROR, "Could not find a lexeme");

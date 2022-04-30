@@ -6,10 +6,11 @@ public class Parser
     public String input = "";
     public Tuple nextToken;
     public boolean res = true;
+    public Tuple lastToken;
 
     public void error(String msg)
     {
-        System.out.println("Error on line " + lexer.line + ": " + msg );
+        System.out.println("Error on line " + lexer.line + ": " + msg + "\nRemaining Prog: " + (nextToken.t == null ? nextToken.p : nextToken.t.p) + "\nCurrentToken: " + (nextToken.t == null ? nextToken.l : nextToken.t.l));
     }
 
     public boolean parseProg(String prog)
@@ -41,6 +42,29 @@ public class Parser
         return res;
     }
 
+    public boolean parseIfStmtList()
+    {
+        lex();
+        if (res)
+        {
+            if (nextToken.l != Lexer.Lexeme.END_OF_INPUT && !(nextToken.t.l == Lexer.Lexeme.KEYWORD && (nextToken.t.p.equalsIgnoreCase("end") || nextToken.t.p.equalsIgnoreCase("else"))))
+            {
+                res = parseStmt();
+                lex();
+                if(nextToken.l == Lexer.Lexeme.SEMICOLON)
+                {
+                    res = parseIfStmtList();
+                }
+                else
+                {
+                    error("Expected Semicolon");
+                    res = false;
+                }
+            }
+        }
+        return res;
+    }
+
     public boolean parseStmt()
     {
         if(nextToken.t.l == Lexer.Lexeme.KEYWORD)
@@ -51,7 +75,7 @@ public class Parser
             }
             else if(nextToken.t.p.equalsIgnoreCase("get"))
             {
-                return parseIDList();
+                return parseGet();
             }
             else if(nextToken.t.p.equalsIgnoreCase("if"))
             {
@@ -92,6 +116,51 @@ public class Parser
         }
     }
 
+    public boolean parseGet()
+    {
+        lex();
+        if(nextToken.l == Lexer.Lexeme.OPENSTBRACE)
+        {
+            return parseIDList();
+        }
+        else if(nextToken.t.l == Lexer.Lexeme.ID)
+        {
+            return true;
+        }
+        else
+        {
+            error("Expected either ID or ID List for Get");
+            return false;
+        }
+    }
+
+    public boolean parseIDList()
+    {
+        lex();
+        if(nextToken.t.l == Lexer.Lexeme.ID)
+        {
+            lex();
+            if (nextToken.l == Lexer.Lexeme.CLOSESTBRACE)
+            {
+                return true;
+            }
+            else if (nextToken.l == Lexer.Lexeme.COMMA)
+            {
+                return parseIDList();
+            }
+            else
+            {
+                error("Comma or \"]\" expected after ID");
+                return false;
+            }
+        }
+        else
+        {
+            error("ID expected after Comma");
+            return false;
+        }
+    }
+
     public boolean parseAssign()
     {
         lex();
@@ -119,11 +188,14 @@ public class Parser
 
     public boolean parsePrint()
     {
+        lastToken = nextToken;
         lex();
         if(nextToken.t.l == Lexer.Lexeme.STRING)
         {
             return true;
         }
+        nextToken = lastToken;
+        input = lastToken.p;
         return parseExpr();
     }
 
@@ -132,19 +204,16 @@ public class Parser
         boolean result = parseExpr();
         if(result)
         {
-            lex();
-            if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("then"))
+            if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("then"))
             {
-                result = parseStmtList();
+                result = parseIfStmtList();
                 if(result)
                 {
-                    lex();
                     if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("else"))
                     {
-                        result = parseStmtList();
+                        result = parseIfStmtList();
                         if(result)
                         {
-                            lex();
                             if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("end"))
                             {
                                 return true;
@@ -177,7 +246,6 @@ public class Parser
         boolean result = parseExpr();
         if(result)
         {
-            lex();
             if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("do"))
             {
                 result = parseStmtList();
@@ -264,7 +332,12 @@ public class Parser
     public boolean parseExpr()
     {
         boolean result = parseN_Expr();
-        if(result)
+        if(nextToken.l == Lexer.Lexeme.CLOSEP)
+        {
+            lex();
+            return parseV_Expr();
+        }
+        else if(result)
         {
             return parseB_Expr();
         }
@@ -276,7 +349,6 @@ public class Parser
 
     public boolean parseV_Expr()
     {
-        lex();
         if(nextToken.l == Lexer.Lexeme.GT || nextToken.l == Lexer.Lexeme.GTE || nextToken.l == Lexer.Lexeme.LTE || nextToken.l == Lexer.Lexeme.LT || nextToken.l == Lexer.Lexeme.EQUAL || nextToken.l == Lexer.Lexeme.NOT_EQUAL)
         {
             return parseValue();
@@ -292,6 +364,7 @@ public class Parser
         boolean result = parseValue();
         if(result)
         {
+            lex();
             return parseV_Expr();
         }
         else
@@ -339,7 +412,7 @@ public class Parser
 
     public boolean parseB_Expr()
     {
-        if(nextToken.t.l == Lexer.Lexeme.KEYWORD && (nextToken.t.p.equalsIgnoreCase("and") || (nextToken.t.p.equalsIgnoreCase("or"))))
+        if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.KEYWORD && (nextToken.t.p.equalsIgnoreCase("and") || (nextToken.t.p.equalsIgnoreCase("or"))))
         {
             return parseN_Expr();
         }
@@ -367,10 +440,9 @@ public class Parser
         lex();
         if(nextToken.l == Lexer.Lexeme.OPENP)
         {
-            lex();
             return parseExpr();
         }
-        else if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("not"))
+        else if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("not"))
         {
             return parseValue();
         }
@@ -378,11 +450,11 @@ public class Parser
         {
             return parseValue();
         }
-        else if(nextToken.t.l == Lexer.Lexeme.ID)
+        else if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.ID)
         {
             return true;
         }
-        else if(nextToken.t.l == Lexer.Lexeme.INT)
+        else if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.INT)
         {
             return true;
         }
@@ -405,37 +477,5 @@ public class Parser
         }
     }
 
-    public boolean parseIDList()
-    {
-        lex();
-        if(nextToken.t.l == Lexer.Lexeme.ID)
-        {
-            lex();
-            if(nextToken.t != null)
-            {
-                if (nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("end"))
-                {
-                    return true;
-                }
-                else if (nextToken.l == Lexer.Lexeme.COMMA)
-                {
-                    return parseIDList();
-                }
-                else
-                {
-                    error("Comma or \"end\" expected after ID");
-                    return false;
-                }
-            }
-            else
-            {
 
-            }
-        }
-        else
-        {
-            error("ID expected after Comma");
-            return false;
-        }
-    }
 }
