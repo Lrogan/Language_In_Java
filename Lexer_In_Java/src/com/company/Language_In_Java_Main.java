@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class Language_In_Java_Main {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args){
         //get input program
         String prog = "";
         Language_In_Java_Main run = new Language_In_Java_Main();
@@ -28,9 +28,9 @@ public class Language_In_Java_Main {
             keyboard.close();
         }
 //        String prog = run.getInput("tester.txt");
-        System.out.println("The system is syntactically correct: " + parse.parseProg(prog));
+        System.out.println(parse.parseProg(prog) ? "Program is Correct" : "Program is Incorrect");
 
-//        //parse input program[lexer driver]
+//        //vestigial parse input program[lexer driver]
 //        Tuple lexd = lexical.lex(prog);
 //        while(prog.length() > 0)
 //        {
@@ -47,7 +47,7 @@ public class Language_In_Java_Main {
 //        }
     }
 
-    public String getInput(String inputfile) throws Exception {
+    public String getInput(String inputfile){
         try
         {
             URL url = getClass().getResource(inputfile);
