@@ -11,7 +11,7 @@ end;
 
 while (a > b)
 do
-  print c;
+  print c - 5;
 end;
 
 for a = 5; a > c; a = c + 1;

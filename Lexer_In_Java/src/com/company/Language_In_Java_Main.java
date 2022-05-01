@@ -9,26 +9,26 @@ import java.util.Scanner;
 public class Language_In_Java_Main {
 
     public static void main(String[] args) throws Exception {
-//        //get input program
-//        String prog = "";
+        //get input program
+        String prog = "";
         Language_In_Java_Main run = new Language_In_Java_Main();
         Parser parse = new Parser();
-//        if(args.length > 0)
-//            prog = run.getInput(args[0]);
-//        else
-//        {
-//            Scanner keyboard = new Scanner(System.in);
-//            System.out.println("Please input the full name(including the extension) of the program you wish to lexicalize\neg. \"testProgram.txt\"");
-//            prog = run.getInput(keyboard.nextLine());
-//            while(prog.equalsIgnoreCase("Error: File Not Found"))
-//            {
-//                System.out.println(prog + "\n" + "Please input the full name(including the extension) of the program you wish to lexicalize\neg. \"testProgram.txt\"");
-//                prog = run.getInput(keyboard.nextLine());
-//            }
-//            keyboard.close();
-//        }
-        String prog = run.getInput("tester.txt");
-        System.out.println(parse.parseProg(prog));
+        if(args.length > 0)
+            prog = run.getInput(args[0]);
+        else
+        {
+            Scanner keyboard = new Scanner(System.in);
+            System.out.println("Please input the full name(including the extension) of the program you wish to lexicalize\neg. \"testProgram.txt\"");
+            prog = run.getInput(keyboard.nextLine());
+            while(prog.equalsIgnoreCase("Error: File Not Found"))
+            {
+                System.out.println(prog + "\n" + "Please input the full name(including the extension) of the program you wish to lexicalize\neg. \"testProgram.txt\"");
+                prog = run.getInput(keyboard.nextLine());
+            }
+            keyboard.close();
+        }
+//        String prog = run.getInput("tester.txt");
+        System.out.println("The system is syntactically correct: " + parse.parseProg(prog));
 
 //        //parse input program[lexer driver]
 //        Tuple lexd = lexical.lex(prog);

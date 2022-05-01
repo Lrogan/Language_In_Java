@@ -196,7 +196,16 @@ public class Parser
         }
         nextToken = lastToken;
         input = lastToken.p;
-        return parseExpr();
+        if(parseExpr())
+        {
+            nextToken = lastToken;
+            input = lastToken.p;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public boolean parseIf()
@@ -246,13 +255,12 @@ public class Parser
         boolean result = parseExpr();
         if(result)
         {
-            if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("do"))
+            if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("do"))
             {
                 result = parseStmtList();
                 if(result)
                 {
-                    lex();
-                    if(nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("end"))
+                    if(nextToken.t != null && nextToken.t.l == Lexer.Lexeme.KEYWORD && nextToken.t.p.equalsIgnoreCase("end"))
                     {
                        return true;
                     }
@@ -277,7 +285,6 @@ public class Parser
         boolean result = parseAssign();
         if(result)
         {
-            lex();
             if(nextToken.l == Lexer.Lexeme.SEMICOLON)
             {
                 result = parseExpr();
@@ -364,8 +371,14 @@ public class Parser
         boolean result = parseValue();
         if(result)
         {
+            lastToken = nextToken;
             lex();
-            return parseV_Expr();
+            if (!parseV_Expr())
+            {
+                nextToken = lastToken;
+                input = (lastToken.t == null ? lastToken.p : lastToken.t.p);
+            }
+            return true;
         }
         else
         {

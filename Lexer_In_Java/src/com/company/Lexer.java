@@ -36,7 +36,7 @@ public class Lexer
         ERROR
     }
 
-    List<String> keywords = Arrays.asList("print","get","if","then","else","end","while","do","and","or","not");
+    List<String> keywords = Arrays.asList("print","get","if","then","else","end","while","do","and","or","not", "for");
 
     public int line = 1;
 
@@ -68,7 +68,7 @@ public class Lexer
         {
             return lex_string(input.substring(i));
         }
-        else if(Character.isLetterOrDigit(input.charAt(i)) || input.charAt(i) == '_')
+        else if(Character.isLetter(input.charAt(i)) || input.charAt(i) == '_')
         {
             return lex_ID_or_keyword(input.substring(i));
         }
@@ -170,7 +170,7 @@ public class Lexer
     {
         int i = 0;
         StringBuilder integer = new StringBuilder();
-        while(i < input.length() && (input.charAt(i) >= 48 && input.charAt(i) <= 57))
+        while(i < input.length() && Character.isDigit(input.charAt(i)))
         {
             integer.append(input.charAt(i));
             i += 1;
